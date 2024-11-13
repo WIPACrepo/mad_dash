@@ -9,6 +9,9 @@ import random
 from pathlib import Path
 from typing import Iterator
 
+import h5py
+import numpy as np
+
 SKIP_KEYS = ["filelist"]
 HISTO_TYPES = [
     "PrimaryZenith",
@@ -145,9 +148,22 @@ def main() -> None:
             }
         )
 
+    #
     # write out aggregated-averaged histos
+    # -> json
     with open(args.dest_dir / f"{args.path.name}.json", "w") as f:
         json.dump(agg_histograms, f)  # don't indent
+    # -> hdf5
+    with h5py.File(args.dest_dir / f"{args.path.name}.hdf5", "w") as f:
+        for histo_type, histo in agg_histograms.items():
+            group = f.create_group(histo_type)
+            for k, v in histo.items():
+                if isinstance(v, list):
+                    group.create_dataset(k, data=np.array(v))
+                elif v is None:
+                    group.attrs[k] = np.nan
+                else:
+                    group.attrs[k] = v
 
 
 if __name__ == "__main__":

@@ -166,3 +166,5 @@ cython_debug/
 
 tmp.*/
 tmp.*
+
+production_client/simprod-histograms.*
