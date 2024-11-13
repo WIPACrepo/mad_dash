@@ -1,7 +1,8 @@
-"""Aggregate/sample the dataset's job's histograms."""
+"""Aggregate the dataset's job's histograms, by sampling."""
 
 import argparse
 import asyncio
+import json
 import logging
 import pickle
 import random
@@ -83,8 +84,17 @@ async def main() -> None:
         "--sample-percentage",
         type=float,
         required=True,
+        help="the percentage of a dataset's histogram to be sampled (for each type)",
+    )
+    parser.add_argument(
+        "--dest-dir",
+        type=Path,
+        required=True,
+        help="the destination directory to write a json file containing aggregated histograms",
     )
     args = parser.parse_args()
+    args.path: Path  # typehint to aid IDE
+    args.dest_dir: Path  # ^^^
 
     agg_histograms = {
         t: {
@@ -115,9 +125,17 @@ async def main() -> None:
                     agg_histograms[histo_type], contents[histo_type]
                 )
 
-    # TODO - normalize data
+    # average data
+    for histo in agg_histograms.values():
+        histo.update(
+            {
+                "bin_values": [x / histo["_sample_count"] for x in histo["bin_values"]],
+            }
+        )
 
-    # TODO - write out aggregated-normed histos
+    # write out aggregated-averaged histos
+    with open(args.dest / f"{args.path.name}.json", "w") as f:
+        json.dump(agg_histograms, f)  # don't indent
 
 
 if __name__ == "__main__":
