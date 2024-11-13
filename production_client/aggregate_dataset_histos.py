@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import logging
+import math
 import pickle
 import random
 from pathlib import Path
@@ -32,16 +33,20 @@ def get_job_histo_files(dataset_dir: Path, sample_percentage: float) -> Iterator
     """Yield a sample of histogram files, each originating from a job."""
     sample_percentage = max(0.0, min(sample_percentage, 1.0))
 
-    all_histos = list((dataset_dir / "*/histos/*.pkl").glob("*"))
-    random.shuffle(all_histos)
-    sampled_histos = all_histos[: int(len(all_histos) * sample_percentage)]
+    # NOTE: we're randomly sampling evenly across all "job-range" subdirectories,
+    #         this keeps memory down (iow, going dir-by-dir). However, it does
+    #         mean the files yielded are not randomly yielded. This is fine for
+    #         aggregating data.
 
-    logging.info(
-        f"sampling {sample_percentage * 100:.1f}% of histograms "
-        f"({len(sampled_histos)}/{len(all_histos)} total)"
-    )
-
-    yield from sampled_histos
+    for subdir in dataset_dir.glob("*/histos"):
+        histo_files = list(subdir.glob("*.pkl"))
+        random.shuffle(histo_files)  # randomly sample
+        sample_size = math.ceil(len(histo_files) * sample_percentage)  # int is floor
+        logging.info(
+            f"sampling {sample_percentage * 100:.1f}% of histograms in {subdir.name}"
+            f"({sample_size}/{len(histo_files)} total)"
+        )
+        yield from histo_files[:sample_size]
 
 
 def update_aggregation(existing: dict, new: dict) -> dict:
