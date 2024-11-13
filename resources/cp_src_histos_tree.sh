@@ -7,13 +7,13 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # Assign the source directory and force destination to the user's home directory
-SOURCE_DIR="$1"
-DEST_DIR="$HOME/simprod-histograms" # Define the destination under the user's home directory
+SOURCE_DIR=$(realpath "$1")
+DEST_DIR=$(realpath "$HOME/simprod-histograms") # Define the destination under the user's home directory
 
 dir_sample_percentage=0.1  # 10% of directories
 file_sample_percentage=0.1 # 10% of .pkl files in each selected directory
 
-echo "Starting the sampling and copying process..."
+echo "Starting the sampling and copying process for Simprod Histograms..."
 echo "Source directory: $SOURCE_DIR"
 echo "Destination directory: $DEST_DIR"
 echo "Sampling $(echo "$dir_sample_percentage * 100" | bc)% of directories and $(echo "$file_sample_percentage * 100" | bc)% of .pkl files within each directory."
@@ -46,7 +46,7 @@ done
 # Create a high-level README.md file in the main destination directory
 readme_file="$DEST_DIR/README.md"
 {
-    echo "# Simulated Production Histograms"
+    echo "# Simprod Histograms"
     echo
     echo "This directory contains a sampled subset of histogram data files."
     echo
