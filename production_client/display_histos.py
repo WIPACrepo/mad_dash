@@ -49,4 +49,6 @@ def main():
         plt.xlabel("Bins")
         plt.ylabel("Values")
         plt.title(histo["name"])
+        if sub := histo.get("_dataset_path"):
+            plt.suptitle(sub, fontsize=10, y=0.95)
         plt.show()
