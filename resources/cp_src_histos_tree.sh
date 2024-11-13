@@ -66,6 +66,10 @@ else
     mkdir -p "$DEST_DIR"
 fi
 
+# Initialize counters for sampled directories and files
+sampled_dir_count=0
+sampled_file_count=0
+
 # Find all directories matching "*/histos" and sample 10% of them
 total_dirs=$(find "$SOURCE_DIR" -type d -path "*/histos" | wc -l)
 sampled_dirs=$(echo "$total_dirs * $dir_sample_percentage" | bc | awk '{print int($1+0.5)}')
@@ -80,6 +84,7 @@ find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$sampled_dirs" | while re
         mkdir -p "$dst_subdir"
     fi
     echo "Created directory: $dst_subdir"
+    ((sampled_dir_count++))
 
     # Find and sample .pkl files, then copy each sampled file
     total_files=$(find "$subdir" -type f -name "*.pkl" | wc -l)
@@ -94,6 +99,7 @@ find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$sampled_dirs" | while re
         else
             cp "$file" "$dst_file"
         fi
+        ((sampled_file_count++))
     done
 done
 
@@ -111,8 +117,8 @@ if [ "$DRYRUN" == false ]; then
         echo
         echo "### Destination Information"
         echo "- **Destination Directory**: $DEST_DIR"
-        echo "- **Total Sampled Directories**: $(find "$DEST_DIR" -type d | wc -l)"
-        echo "- **Total Sampled .pkl Files**: $(find "$DEST_DIR" -type f -name "*.pkl" | wc -l)"
+        echo "- **Total Sampled Directories**: $sampled_dir_count"
+        echo "- **Total Sampled .pkl Files**: $sampled_file_count"
     } >>"$readme_file"
 else
     echo "[DRYRUN] Writing README.md to $readme_file"
