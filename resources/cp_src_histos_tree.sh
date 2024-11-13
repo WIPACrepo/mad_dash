@@ -36,7 +36,7 @@ done
 # Create a high-level README.md file in the main destination directory
 readme_file="$DEST_DIR/README.md"
 {
-    echo "# Simulated Production Histograms"
+    echo "# Simprod Histograms"
     echo
     echo "This directory contains a sampled subset of histogram data files."
     echo
