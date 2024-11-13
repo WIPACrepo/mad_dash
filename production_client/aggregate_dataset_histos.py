@@ -106,7 +106,7 @@ async def main() -> None:
             "nan_count": None,
             "bin_values": [],
             "_sample_count": 0,
-            "_dataset_path": args.path,
+            "_dataset_path": args.path.resolve(),
         }
         for t in HISTO_TYPES
     }
