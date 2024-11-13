@@ -22,14 +22,14 @@ echo "Sampling $((dir_sample_percentage * 100))% of directories and $((file_samp
 find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n $(find "$SOURCE_DIR" -type d -path "*/histos" | wc -l | awk -v pct=$dir_sample_percentage '{print int($1 * pct)}') | while read -r subdir; do
     # Define the destination subdirectory path and create it
     dst_subdir="$DEST_DIR/$subdir"
-    # mkdir -p "$dst_subdir"
+    mkdir -p "$dst_subdir"
     echo "Created directory: $dst_subdir"
 
     # Find and sample .pkl files, then copy each sampled file
     find "$subdir" -type f -name "*.pkl" | shuf -n $(find "$subdir" -type f -name "*.pkl" | wc -l | awk -v pct=$file_sample_percentage '{print int($1 * pct)}') | while read -r file; do
         dst_file="$dst_subdir/${file##*/}"
         echo "Copying $file to $dst_file"
-        # cp "$file" "$dst_file"
+        cp "$file" "$dst_file"
     done
 done
 
