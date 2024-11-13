@@ -35,7 +35,7 @@ def get_job_histo_files(dataset_dir: Path, sample_percentage: float) -> Iterator
 
     # NOTE: we're randomly sampling evenly across all "job-range" subdirectories,
     #         this keeps memory down (iow, going dir-by-dir). However, it does
-    #         mean the files yielded are not randomly yielded. This is fine for
+    #         mean the files yielded in "job-range" order. This is fine for
     #         aggregating data.
 
     for subdir in dataset_dir.glob("*/histos"):
