@@ -13,7 +13,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "path",
-        nargs="1",
         type=Path,
         help="the dataset directory to grab pickled histograms",
     )
@@ -52,3 +51,7 @@ def main():
         if sub := histo.get("_dataset_path"):
             plt.suptitle(sub, fontsize=10, y=0.95)
         plt.show()
+
+
+if __name__ == "__main__":
+    main()

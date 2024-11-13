@@ -1,7 +1,6 @@
 """Aggregate the dataset's job's histograms, by sampling."""
 
 import argparse
-import asyncio
 import json
 import logging
 import math
@@ -59,6 +58,16 @@ def update_aggregation(existing: dict, new: dict) -> dict:
             f"new histogram '{new["name"]}' does not match existing histogram '{existing['name']}'"
         )
 
+    def new_bin_values():
+        if not existing["bin_values"]:
+            return new["bin_values"]
+        if len(existing["bin_values"]) != len(new["bin_values"]):
+            raise ValueError(
+                f"'bin_values' list must have the same length: "
+                f"{existing["bin_values"]} + {new["bin_values"]}"
+            )
+        return [a + b for a, b in zip(existing["bin_values"], new["bin_values"])]
+
     existing.update(
         {
             "xmin": min(existing["xmin"], new["xmin"]),
@@ -66,9 +75,7 @@ def update_aggregation(existing: dict, new: dict) -> dict:
             "overflow": None,  # TOD0
             "underflow": None,  # TOD0
             "nan_count": existing["nan_count"] + new["nan_count"],
-            "bin_values": [
-                a + b for a, b in zip(existing["bin_values"], new["bin_values"])
-            ],
+            "bin_values": new_bin_values(),
             "_sample_count": existing["_sample_count"] + 1,
         }
     )
@@ -76,12 +83,11 @@ def update_aggregation(existing: dict, new: dict) -> dict:
     return existing
 
 
-async def main() -> None:
+def main() -> None:
     """Do main."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "path",
-        nargs="1",
         type=Path,
         help="the dataset directory to grab pickled histograms",
     )
@@ -104,14 +110,14 @@ async def main() -> None:
     agg_histograms = {
         t: {
             "name": t,
-            "xmin": None,
-            "xmax": None,
+            "xmin": float("inf"),  # any value will replace this one
+            "xmax": float("-inf"),  # any value will replace this one
             "overflow": None,
             "underflow": None,
-            "nan_count": None,
+            "nan_count": 0,
             "bin_values": [],
             "_sample_count": 0,
-            "_dataset_path": args.path.resolve(),
+            "_dataset_path": str(args.path.resolve()),
         }
         for t in HISTO_TYPES
     }
@@ -140,9 +146,9 @@ async def main() -> None:
         )
 
     # write out aggregated-averaged histos
-    with open(args.dest / f"{args.path.name}.json", "w") as f:
+    with open(args.dest_dir / f"{args.path.name}.json", "w") as f:
         json.dump(agg_histograms, f)  # don't indent
 
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    main()
