@@ -41,11 +41,11 @@ readme_file="$DEST_DIR/README.md"
     echo "This directory contains a sampled subset of histogram data files."
     echo
     echo "### Source Information"
-    echo "- **Source Directory**: $SOURCE_DIR"
+    echo "- **Source Directory**: $(realpath "$SOURCE_DIR")"
     echo "- **Sampling Parameters**: $((dir_sample_percentage * 100))% of directories and $((file_sample_percentage * 100))% of .pkl files within each selected directory."
     echo
     echo "### Destination Information"
-    echo "- **Destination Directory**: $DEST_DIR"
+    echo "- **Destination Directory**: $(realpath "$DEST_DIR")"
     echo "- **Total Sampled Directories**: $(find "$DEST_DIR" -type d | wc -l)"
     echo "- **Total Sampled .pkl Files**: $(find "$DEST_DIR" -type f -name "*.pkl" | wc -l)"
 } >>"$readme_file"
