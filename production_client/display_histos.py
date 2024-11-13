@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import math
 import pickle
 from pathlib import Path
 
@@ -40,6 +41,51 @@ def from_hdf5(fpath: Path):
     return data_dict
 
 
+def plot_histograms(histograms, cols=2):
+    """Plots multiple histograms in a grid layout with automatic font size adjustment for all text."""
+    num_histograms = len(histograms)
+    rows = math.ceil(num_histograms / cols)
+
+    # Calculate font sizes based on the grid size
+    base_font_size = 12
+    font_size = max(6, base_font_size - int(0.4 * (rows * cols - 1)))
+
+    # Adjust figsize to make each plot less tall
+    fig, axes = plt.subplots(rows, cols, figsize=(10 * cols, 3 * rows))
+    axes = axes.flatten()  # Flatten axes array for easy iteration
+
+    for idx, (name, histo) in enumerate(histograms.items()):
+        ax = axes[idx]  # Select the subplot axis
+        num_bins = len(histo["bin_values"])
+
+        # Compute x values for the bins
+        x_values = [
+            histo["xmin"] + (histo["xmax"] - histo["xmin"]) * i / (num_bins - 1)
+            for i in range(num_bins)
+        ]
+
+        # Plot the histogram
+        ax.bar(
+            x_values,
+            histo["bin_values"],
+            width=(histo["xmax"] - histo["xmin"]) / num_bins,
+            align="center",
+        )
+
+        # Set axis labels, title, and tick label sizes
+        ax.set_xlabel("Bins", fontsize=font_size)
+        ax.set_ylabel("Values", fontsize=font_size)
+        ax.set_title(histo["name"], fontsize=font_size + 2)
+        if sub := histo.get("_dataset_path"):
+            ax.set_title(f"{histo['name']}\n{sub}", fontsize=font_size)
+
+        # Set tick parameters for both axes
+        ax.tick_params(axis="both", labelsize=font_size - 2)
+
+    plt.tight_layout()
+    plt.show()
+
+
 def main():
     """Display them."""
     parser = argparse.ArgumentParser()
@@ -64,27 +110,7 @@ def main():
         raise RuntimeError(f"Unrecognized file type: {args.path}")
 
     # display with matplotlib
-    for histo in histograms.values():
-        num_bins = len(histo["bin_values"])
-        x_values = [
-            histo["xmin"] + (histo["xmax"] - histo["xmin"]) * i / (num_bins - 1)
-            for i in range(num_bins)
-        ]
-
-        # Plotting the bin values
-        plt.figure(figsize=(8, 6))
-        plt.bar(
-            x_values,
-            histo["bin_values"],
-            width=(histo["xmax"] - histo["xmin"]) / num_bins,
-            align="center",
-        )
-        plt.xlabel("Bins")
-        plt.ylabel("Values")
-        plt.title(histo["name"])
-        if sub := histo.get("_dataset_path"):
-            plt.suptitle(sub, fontsize=10, y=0.95)
-        plt.show()
+    plot_histograms(histograms, cols=2)
 
 
 if __name__ == "__main__":
