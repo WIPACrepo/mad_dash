@@ -26,8 +26,9 @@ total_dirs=$(find "$SOURCE_DIR" -type d -path "*/histos" | wc -l)
 sampled_dirs=$(echo "$total_dirs * $dir_sample_percentage" | bc | awk '{print int($1+0.5)}')
 
 find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$sampled_dirs" | while read -r subdir; do
-    # Define the destination subdirectory path, clean up with realpath, and create it
-    dst_subdir=$(realpath "$DEST_DIR/$subdir")
+    # Calculate the relative path from SOURCE_DIR and create the corresponding destination directory
+    relative_subdir="${subdir#$SOURCE_DIR/}"
+    dst_subdir="$DEST_DIR/$relative_subdir"
     mkdir -p "$dst_subdir"
     echo "Created directory: $dst_subdir"
 
@@ -36,8 +37,8 @@ find "$SOURCE_DIR" -type d -path "*/histos" | shuf -n "$sampled_dirs" | while re
     sampled_files=$(echo "$total_files * $file_sample_percentage" | bc | awk '{print int($1+0.5)}')
 
     find "$subdir" -type f -name "*.pkl" | shuf -n "$sampled_files" | while read -r file; do
-        # Define the destination file path with realpath for clean path
-        dst_file=$(realpath "$dst_subdir/${file##*/}")
+        # Define the destination file path to maintain directory structure
+        dst_file="$dst_subdir/${file##*/}"
         echo "Copying $file to $dst_file"
         cp "$file" "$dst_file"
     done
