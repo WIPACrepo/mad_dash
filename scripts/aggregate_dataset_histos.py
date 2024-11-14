@@ -110,6 +110,10 @@ def main() -> None:
     args.path: Path  # typehint to aid IDE
     args.dest_dir: Path  # ^^^
 
+    _main(args)
+
+
+def _main(args: argparse.Namespace) -> None:
     agg_histograms = {
         t: {
             "name": t,
